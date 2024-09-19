@@ -70,6 +70,7 @@ exclude = ["tock"]
 members = [
     "apis/interface/buttons",
     "apis/interface/buzzer",
+    "apis/interface/servo",
     "apis/interface/console",
     "apis/interface/leds",
     "apis/kernel/low_level_debug",
