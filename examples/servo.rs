@@ -32,7 +32,7 @@ fn main() {
             )
             .unwrap();
         } else if val2 == Err(ErrorCode::NoSupport) {
-            writeln!(Console::writer(), "The servo cannot return it's angle").unwrap();
+            writeln!(Console::writer(), "The servo cannot return its angle").unwrap();
         } else if val1 == Err(ErrorCode::NoDevice) {
             writeln!(
                 Console::writer(),
