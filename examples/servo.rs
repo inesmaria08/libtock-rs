@@ -31,7 +31,7 @@ fn main() {
                 "The provided angle exceeds the servo's limit"
             )
             .unwrap();
-        } else if val2 == Err(ErrorCode::Invalid) {
+        } else if val2 == Err(ErrorCode::NoSupport) {
             writeln!(Console::writer(), "The servo cannot return it's angle").unwrap();
         } else if val1 == Err(ErrorCode::NoDevice) {
             writeln!(
