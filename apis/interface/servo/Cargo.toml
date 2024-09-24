@@ -1,3 +1,4 @@
+cargo-features = ["edition2024"]
 [package]
 name = "libtock_servo"
 version = "0.1.0"
