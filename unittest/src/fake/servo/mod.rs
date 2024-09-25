@@ -25,7 +25,8 @@ impl<const NUM_SERVO: usize> crate::fake::SyscallDriver for Servo<NUM_SERVO> {
     fn command(&self, command_num: u32, servo_index: u32, angle: u32) -> CommandReturn {
         match command_num {
             0 => crate::command_return::success(),
-            1 => {
+            1 => crate::command_return::success_u32(NUM_SERVO as u32),
+            2 => {
                 if servo_index >= NUM_SERVO as u32 {
                     crate::command_return::failure(ErrorCode::NoDevice)
                 } else if angle <= 180 {
@@ -36,7 +37,7 @@ impl<const NUM_SERVO: usize> crate::fake::SyscallDriver for Servo<NUM_SERVO> {
                 }
             }
             // Return the current angle.
-            2 => {
+            3 => {
                 if servo_index >= NUM_SERVO as u32 {
                     crate::command_return::failure(ErrorCode::NoDevice)
                 } else {
@@ -60,5 +61,6 @@ const DRIVER_NUM: u32 = 0x90009;
 
 // Command numbers
 const EXISTS: u32 = 0;
-const SET_ANGLE: u32 = 1;
-const GET_ANGLE: u32 = 2;
+const SERVO_NUMBER: u32 = 1;
+const SET_ANGLE: u32 = 2;
+const GET_ANGLE: u32 = 3;

@@ -10,6 +10,10 @@ fn command() {
     let value = servo.command(EXISTS, 0, 0);
     assert_eq!(CommandReturn::is_success(&value), true);
     assert_eq!(
+        CommandReturn::get_success_u32(&servo.command(SERVO_NUMBER, 0, 0)),
+        Some(1)
+    );
+    assert_eq!(
         CommandReturn::is_success(&servo.command(SET_ANGLE, 0, 90)),
         true
     );
@@ -28,7 +32,11 @@ fn kernel_integration() {
     let value = fake::Syscalls::command(DRIVER_NUM, EXISTS, 0, 0);
     assert_eq!(CommandReturn::is_success(&value), true);
     assert_eq!(
-        fake::Syscalls::command(DRIVER_NUM, SET_ANGLE, 2, 90).get_failure(),
+        CommandReturn::get_success_u32(&fake::Syscalls::command(DRIVER_NUM, SERVO_NUMBER, 0, 0)),
+        Some(1)
+    );
+    assert_eq!(
+        fake::Syscalls::command(DRIVER_NUM, SET_ANGLE, 1, 90).get_failure(),
         Some(ErrorCode::NoDevice)
     );
     assert_eq!(

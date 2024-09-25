@@ -8,7 +8,7 @@ use libtock::servo::Servo;
 use libtock_platform::ErrorCode;
 
 set_main! {main}
-stack_size! {0x200}
+stack_size! {0x300}
 
 fn main() {
     //Checks if the driver exists.
@@ -16,6 +16,14 @@ fn main() {
         writeln!(Console::writer(), "The driver could not be found").unwrap();
         return;
     }
+    let servo_number = Servo::servo_number().unwrap();
+
+    writeln!(
+        Console::writer(),
+        "The number of available servomotors is {:?}",
+        servo_number
+    )
+    .unwrap();
 
     let index: u32 = 0; // the first index available.
 

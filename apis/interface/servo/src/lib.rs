@@ -14,6 +14,10 @@ impl<S: Syscalls> Servo<S> {
             Err(ErrorCode::Fail)
         }
     }
+    /// Returns the number of the servomotors available.
+    pub fn servo_number() -> Result<u32, ErrorCode> {
+        S::command(DRIVER_NUM, SERVO_NUMBER, 0, 0).to_result()
+    }
 
     /// Changes the angle of the servo.
     /// Return values:
@@ -55,5 +59,6 @@ const DRIVER_NUM: u32 = 0x90009;
 
 // Command IDs
 const EXISTS: u32 = 0;
-const SET_ANGLE: u32 = 1;
-const GET_ANGLE: u32 = 2;
+const SERVO_NUMBER: u32 = 1;
+const SET_ANGLE: u32 = 2;
+const GET_ANGLE: u32 = 3;
