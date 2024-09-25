@@ -12,7 +12,7 @@ stack_size! {0x200}
 
 fn main() {
     //Checks if the driver exists.
-    if Err(ErrorCode::Fail) == Servo::servo_exists() {
+    if Err(ErrorCode::Fail) == Servo::exists() {
         writeln!(Console::writer(), "The driver could not be found").unwrap();
         return;
     }

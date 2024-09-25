@@ -7,7 +7,7 @@ use libtock_platform::CommandReturn;
 fn command() {
     use fake::SyscallDriver;
     let servo = Servo::<1>::new();
-    let value = servo.command(SERVO_EXISTS, 0, 0);
+    let value = servo.command(EXISTS, 0, 0);
     assert_eq!(CommandReturn::is_success(&value), true);
     assert_eq!(
         CommandReturn::is_success(&servo.command(SET_ANGLE, 0, 90)),
@@ -25,7 +25,7 @@ fn kernel_integration() {
     let kernel = fake::Kernel::new();
     let servo = Servo::<1>::new();
     kernel.add_driver(&servo);
-    let value = fake::Syscalls::command(DRIVER_NUM, SERVO_EXISTS, 0, 0);
+    let value = fake::Syscalls::command(DRIVER_NUM, EXISTS, 0, 0);
     assert_eq!(CommandReturn::is_success(&value), true);
     assert_eq!(
         fake::Syscalls::command(DRIVER_NUM, SET_ANGLE, 2, 90).get_failure(),

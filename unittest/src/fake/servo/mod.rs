@@ -59,6 +59,6 @@ mod tests;
 const DRIVER_NUM: u32 = 0x90009;
 
 // Command numbers
-const SERVO_EXISTS: u32 = 0;
+const EXISTS: u32 = 0;
 const SET_ANGLE: u32 = 1;
 const GET_ANGLE: u32 = 2;

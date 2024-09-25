@@ -6,14 +6,14 @@ type Servo = super::Servo<fake::Syscalls>;
 #[test]
 fn no_driver() {
     let _kernel = fake::Kernel::new();
-    assert_eq!(Servo::servo_exists(), Err(ErrorCode::Fail))
+    assert_eq!(Servo::exists(), Err(ErrorCode::Fail))
 }
 #[test]
-fn servo_exists() {
+fn exists() {
     let kernel = fake::Kernel::new();
     let driver = fake::Servo::<2>::new();
     kernel.add_driver(&driver);
-    assert_eq!(Servo::servo_exists(), Ok(()));
+    assert_eq!(Servo::exists(), Ok(()));
 }
 #[test]
 fn set_angle() {
