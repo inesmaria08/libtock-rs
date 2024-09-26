@@ -16,12 +16,12 @@ fn main() {
         writeln!(Console::writer(), "The driver could not be found").unwrap();
         return;
     }
-    let servo_number = Servo::servo_number().unwrap();
+    let servo_count = Servo::servo_count().unwrap();
 
     writeln!(
         Console::writer(),
         "The number of available servomotors is {:?}",
-        servo_number
+        servo_count
     )
     .unwrap();
 

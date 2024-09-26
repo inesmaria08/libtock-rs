@@ -61,6 +61,6 @@ const DRIVER_NUM: u32 = 0x90009;
 
 // Command numbers
 const EXISTS: u32 = 0;
-const SERVO_NUMBER: u32 = 1;
+const SERVO_COUNT: u32 = 1;
 const SET_ANGLE: u32 = 2;
 const GET_ANGLE: u32 = 3;
