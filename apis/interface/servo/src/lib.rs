@@ -8,7 +8,7 @@ impl<S: Syscalls> Servo<S> {
     /// Check whether the driver exists.
     pub fn exists() -> Result<(), ErrorCode> {
         let val = S::command(DRIVER_NUM, EXISTS, 0, 0).is_success();
-        if val == true {
+        if val {
             Ok(())
         } else {
             Err(ErrorCode::Fail)
