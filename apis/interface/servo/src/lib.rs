@@ -25,11 +25,11 @@ impl<S: Syscalls> Servo<S> {
     /// - `Ok(())`: The attempt at changing the angle was successful.
     /// - `FAIL`: Cannot change the angle.
     /// - `INVAL`: The value exceeds u16, indicating it's incorrect
-    /// since servomotors can only have a maximum of 360 degrees.
+    ///   since servomotors can only have a maximum of 360 degrees.
     /// - `NODEVICE`: The index exceeds the number of servomotors provided.
     ///  # Arguments
     /// - `angle` - the variable that receives the angle
-    /// (in degrees from 0 to 180) from the servo driver.
+    ///   (in degrees from 0 to 180) from the servo driver.
     /// - `index` - the variable that receives the index of the servomotor.
     pub fn set_angle(index: u32, angle: u32) -> Result<(), ErrorCode> {
         S::command(DRIVER_NUM, SET_ANGLE, index, angle).to_result()
