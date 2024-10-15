@@ -16,11 +16,11 @@ fn exists() {
     assert_eq!(Servo::exists(), Ok(()));
 }
 #[test]
-fn servo_count() {
+fn count() {
     let kernel = fake::Kernel::new();
     let driver = fake::Servo::<2>::new();
     kernel.add_driver(&driver);
-    assert_eq!(Servo::servo_count(), Ok(2));
+    assert_eq!(Servo::count(), Ok(2));
 }
 #[test]
 fn set_angle() {
