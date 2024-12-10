@@ -1,15 +1,15 @@
 #![no_std]
 use core::cell::Cell;
-// use core::fmt;
 use core::marker::PhantomData;
-// use core::ptr::addr_of_mut;
 use libtock_platform::allow_ro::AllowRo;
 use libtock_platform::share;
 use libtock_platform::subscribe::Subscribe;
 use libtock_platform::{self as platform, DefaultConfig};
 use libtock_platform::{ErrorCode, Syscalls};
 const BUFFER_SIZE: usize = 10 * 1024;
+
 static mut STATIC_BUFFER: Option<[u8; BUFFER_SIZE]> = None;
+
 pub struct Display<S: Syscalls, C: Config = DefaultConfig>(S, C);
 
 impl<S: Syscalls, C: Config> Display<S, C> {
@@ -35,7 +35,7 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         S::command(DRIVER_NUM, command::EXISTS, 0, 0).is_success()
     }
     pub fn screen_setup() -> Result<u32, ErrorCode> {
-        S::command(DRIVER_NUM, command::SCREEN_SETUP, 1, 0).to_result()
+        S::command(DRIVER_NUM, command::SCREEN_SETUP, 0, 0).to_result()
     }
     pub fn set_power(value: usize) -> Result<(), ErrorCode> {
         if value != 0 {
@@ -115,7 +115,18 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         S::command(DRIVER_NUM, command::PIXEL_FORMAT, index as u32, 0).to_result()
     }
     pub fn get_rotation() -> Result<u32, ErrorCode> {
-        S::command(DRIVER_NUM, command::GET_ROTATION, 0, 0).to_result()
+        let called: Cell<Option<(u32,)>> = Cell::new(None);
+        share::scope(|subscribe| {
+            S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
+
+            let val = S::command(DRIVER_NUM, command::GET_ROTATION, 0, 0).to_result();
+            loop {
+                S::yield_wait();
+                if let Some((_,)) = called.get() {
+                    return val;
+                }
+            }
+        })
     }
     pub fn set_rotation(rotation: usize) -> Result<(), ErrorCode> {
         let called: Cell<Option<(u32,)>> = Cell::new(None);
@@ -135,13 +146,46 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         S::command(DRIVER_NUM, command::GET_RESOLUTION, 0, 0).to_result()
     }
     pub fn set_resolution(resolution: usize) -> Result<(), ErrorCode> {
-        S::command(DRIVER_NUM, command::SET_RESOLUTION, resolution as u32, 0).to_result()
+        let called: Cell<Option<(u32,)>> = Cell::new(None);
+        share::scope(|subscribe| {
+            S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
+
+            S::command(DRIVER_NUM, command::SET_RESOLUTION, resolution as u32, 0).to_result()?;
+            loop {
+                S::yield_wait();
+                if let Some((_,)) = called.get() {
+                    return Ok(());
+                }
+            }
+        })
     }
     pub fn get_pixel_format() -> Result<u32, ErrorCode> {
-        S::command(DRIVER_NUM, command::GET_PIXEL_FORMAT, 0, 0).to_result()
+        let called: Cell<Option<(u32,)>> = Cell::new(None);
+        share::scope(|subscribe| {
+            S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
+
+            let val = S::command(DRIVER_NUM, command::GET_PIXEL_FORMAT, 0, 0).to_result();
+            loop {
+                S::yield_wait();
+                if let Some((_,)) = called.get() {
+                    return val;
+                }
+            }
+        })
     }
     pub fn set_pixel_format(format: usize) -> Result<(), ErrorCode> {
-        S::command(DRIVER_NUM, command::SET_PIXEL_FORMAT, format as u32, 0).to_result()
+        let called: Cell<Option<(u32,)>> = Cell::new(None);
+        share::scope(|subscribe| {
+            S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
+
+            S::command(DRIVER_NUM, command::SET_PIXEL_FORMAT, format as u32, 0).to_result()?;
+            loop {
+                S::yield_wait();
+                if let Some((_,)) = called.get() {
+                    return Ok(());
+                }
+            }
+        })
     }
     pub fn set_write_frame(x: u32, y: u32, width: u32, height: u32) -> Result<(), ErrorCode> {
         let data1: u32 = (((x & 0xFFFF) << (16 as u8)) | (y & 0xFFFF)) as u32;

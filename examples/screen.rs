@@ -1,6 +1,3 @@
-//! An extremely simple libtock-rs example. Just prints out a message
-//! using the Console capsule, then terminates.
-
 #![no_main]
 #![no_std]
 use core::fmt::Write;
@@ -9,30 +6,28 @@ use libtock::alarm::Milliseconds;
 use libtock::console::Console;
 use libtock::display::Display;
 use libtock::runtime::{set_main, stack_size};
-// use libtock_display::Display;
 
 set_main! {main}
 stack_size! {800}
 
 fn main() {
-    writeln!(Console::writer(), "available resolutions\n");
+    let _ = writeln!(Console::writer(), "available resolutions\n");
     let resolutions = match Display::get_resolution_modes_count() {
         Ok(val) => val,
         Err(e) => {
-            writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+            let _ = writeln!(Console::writer(), "{:?}\n", e);
             0
         }
     };
     if resolutions == 0 {
         assert_eq!(0, 1);
     }
-    writeln!(Console::writer(), "{resolutions}\n");
-    let mut index = 0;
-    while index < resolutions {
+    let _ = writeln!(Console::writer(), "{resolutions}\n");
+    for index in 0..resolutions {
         let (width, height) = match Display::get_resolution_width_height(index as usize) {
             Ok((width, height)) => (width, height),
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
                 (0, 0)
             }
         };
@@ -41,48 +36,44 @@ fn main() {
         if width == 0 && height == 0 {
             assert_eq!(0, 1);
         }
-        writeln!(Console::writer(), " {width} x {height} \n");
-        index = index + 1;
+        let _ = writeln!(Console::writer(), " {width} x {height} \n");
     }
 
-    writeln!(Console::writer(), "available colors depths\n");
+    let _ = writeln!(Console::writer(), "available colors depths\n");
     let pixel_format = match Display::get_pixel_format() {
         Ok(val) => val,
         Err(e) => {
-            writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+            let _ = writeln!(Console::writer(), "{:?}\n", e);
             0
         }
     };
     if pixel_format == 0 {
         assert_eq!(0, 1);
     }
-    index = 0;
-    while index < pixel_format {
+    for index in 0..pixel_format {
         let format = match Display::pixel_format(index as usize) {
             Ok(val) => val,
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
                 0
             }
         };
-        // let bits = screen_get_bits_per_pixel(format);
-        writeln!(Console::writer(), "  {format} bbp\n");
-        index = index + 1;
+        let _ = writeln!(Console::writer(), "  {format} bbp\n");
     }
 
     let mut buffer: Option<*mut u8> = None;
     let status = Display::screen_buffer_init(&mut buffer);
-    writeln!(Console::writer(), "screen init\n");
-    let error = match Display::set_brightness(100) {
+    let _ = writeln!(Console::writer(), "screen init\n");
+    let _ = match Display::set_brightness(100) {
         Ok(()) => (),
         Err(e) => {
-            writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+            let _ = writeln!(Console::writer(), "{:?}\n", e);
         }
     };
     let (width, height) = match Display::get_resolution() {
         Ok((width, height)) => (width, height),
         Err(e) => {
-            writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+            let _ = writeln!(Console::writer(), "{:?}\n", e);
             (0, 0)
         }
     };
@@ -91,16 +82,16 @@ fn main() {
     if width == 0 && height == 0 {
         assert_eq!(0, 1);
     };
-    let error = match Display::set_write_frame(0, 0, width, height) {
+    let _ = match Display::set_write_frame(0, 0, width, height) {
         Ok(()) => (),
         Err(e) => {
-            writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+            let _ = writeln!(Console::writer(), "{:?}\n", e);
         }
     };
-    let error = match Display::fill(status, 0x0) {
+    let _ = match Display::fill(status, 0x0) {
         Ok(()) => (),
         Err(e) => {
-            writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+            let _ = writeln!(Console::writer(), "{:?}\n", e);
         }
     };
     let mut invert = false;
@@ -114,76 +105,76 @@ fn main() {
             }
         }
 
-        let error = match Display::set_rotation(i % 4) {
+        let _ = match Display::set_rotation(i % 4) {
             Ok(()) => (),
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
             }
         };
-        let error = match Display::set_write_frame(10, 20, 30, 30) {
+        let _ = match Display::set_write_frame(10, 20, 30, 30) {
             Ok(()) => (),
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
             }
         };
-        let error = match Display::fill(status, 0xF800) {
+        let _ = match Display::fill(status, 0xF800) {
             Ok(()) => (),
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
             }
         };
-        let error = match Display::set_write_frame(88, 20, 30, 30) {
+        let _ = match Display::set_write_frame(88, 20, 30, 30) {
             Ok(()) => (),
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
             }
         };
-        let error = match Display::fill(status, 0x0) {
+        let _ = match Display::fill(status, 0x0) {
             Ok(()) => (),
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
-            }
-        };
-
-        Alarm::sleep_for(Milliseconds(1000)).unwrap();
-
-        let error = match Display::set_write_frame(10, 20, 30, 30) {
-            Ok(()) => (),
-            Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
-            }
-        };
-        let error = match Display::fill(status, 0x0) {
-            Ok(()) => (),
-            Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
-            }
-        };
-        let error = match Display::set_write_frame(88, 20, 30, 30) {
-            Ok(()) => (),
-            Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
-            }
-        };
-        let error = match Display::fill(status, 0x07F0) {
-            Ok(()) => (),
-            Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
             }
         };
 
         Alarm::sleep_for(Milliseconds(1000)).unwrap();
 
-        let error = match Display::set_write_frame(0, 0, width, height) {
+        let _ = match Display::set_write_frame(10, 20, 30, 30) {
             Ok(()) => (),
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
             }
         };
-        let error = match Display::fill(status, 0x0) {
+        let _ = match Display::fill(status, 0x0) {
             Ok(()) => (),
             Err(e) => {
-                writeln!(Console::writer(), "\n\n\n   {:?}\n\n\n", e);
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
+            }
+        };
+        let _ = match Display::set_write_frame(88, 20, 30, 30) {
+            Ok(()) => (),
+            Err(e) => {
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
+            }
+        };
+        let _ = match Display::fill(status, 0x07F0) {
+            Ok(()) => (),
+            Err(e) => {
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
+            }
+        };
+
+        Alarm::sleep_for(Milliseconds(1000)).unwrap();
+
+        let _ = match Display::set_write_frame(0, 0, width, height) {
+            Ok(()) => (),
+            Err(e) => {
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
+            }
+        };
+        let _ = match Display::fill(status, 0x0) {
+            Ok(()) => (),
+            Err(e) => {
+                let _ = writeln!(Console::writer(), "{:?}\n", e);
             }
         };
     }
