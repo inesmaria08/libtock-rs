@@ -54,7 +54,8 @@ impl<S: Syscalls, C: Config> Console<S, C> {
 
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(DRIVER_NUM, command::WRITE, s.len() as u32, 0).to_result()?;
+            S::command(DRIVER_NUM, command::WRITE, s.len() as u32, 0)
+                .to_result::<(), ErrorCode>()?;
 
             loop {
                 S::yield_wait();
@@ -87,7 +88,7 @@ impl<S: Syscalls, C: Config> Console<S, C> {
 
             // When this fails, `called` is guaranteed unmodified,
             // because upcalls are never processed until we call `yield`.
-            S::command(DRIVER_NUM, command::READ, len as u32, 0).to_result()?;
+            S::command(DRIVER_NUM, command::READ, len as u32, 0).to_result::<(), ErrorCode>()?;
 
             loop {
                 S::yield_wait();
@@ -137,7 +138,7 @@ mod tests;
 // Driver number and command IDs
 // -----------------------------------------------------------------------------
 
-const DRIVER_NUM: u32 = 1;
+const DRIVER_NUM: u32 = 0x1;
 
 // Command IDs
 #[allow(unused)]
