@@ -160,18 +160,7 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         })
     }
     pub fn get_pixel_format() -> Result<u32, ErrorCode> {
-        let called: Cell<Option<(u32,)>> = Cell::new(None);
-        share::scope(|subscribe| {
-            S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
-
-            let val = S::command(DRIVER_NUM, command::GET_PIXEL_FORMAT, 0, 0).to_result();
-            loop {
-                S::yield_wait();
-                if let Some((_,)) = called.get() {
-                    return val;
-                }
-            }
-        })
+        S::command(DRIVER_NUM, command::GET_PIXEL_FORMAT, 0, 0).to_result()
     }
     pub fn set_pixel_format(format: usize) -> Result<(), ErrorCode> {
         let called: Cell<Option<(u32,)>> = Cell::new(None);
