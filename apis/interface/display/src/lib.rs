@@ -31,8 +31,13 @@ impl<S: Syscalls, C: Config> Display<S, C> {
             }
         }
     }
-    pub fn exists() -> bool {
-        S::command(DRIVER_NUM, command::EXISTS, 0, 0).is_success()
+    pub fn exists() -> Result<(), ErrorCode> {
+        let val = S::command(DRIVER_NUM, command::EXISTS, 0, 0).is_success();
+        if val {
+            Ok(())
+        } else {
+            Err(ErrorCode::Fail)
+        }
     }
     pub fn screen_setup() -> Result<u32, ErrorCode> {
         S::command(DRIVER_NUM, command::SCREEN_SETUP, 0, 0).to_result()
@@ -145,12 +150,17 @@ impl<S: Syscalls, C: Config> Display<S, C> {
     pub fn get_resolution() -> Result<(u32, u32), ErrorCode> {
         S::command(DRIVER_NUM, command::GET_RESOLUTION, 0, 0).to_result()
     }
-    pub fn set_resolution(resolution: usize) -> Result<(), ErrorCode> {
+    pub fn set_resolution(width: usize, height: usize) -> Result<(), ErrorCode> {
         let called: Cell<Option<(u32,)>> = Cell::new(None);
         share::scope(|subscribe| {
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
-
-            S::command(DRIVER_NUM, command::SET_RESOLUTION, resolution as u32, 0).to_result()?;
+            S::command(
+                DRIVER_NUM,
+                command::SET_RESOLUTION,
+                width as u32,
+                height as u32,
+            )
+            .to_result()?;
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
