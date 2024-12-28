@@ -109,6 +109,7 @@ fn get_rotation() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    assert_eq!(Screen::set_rotation(30), Ok(()));
     assert_eq!(Screen::get_rotation(), Ok(30));
 }
 
@@ -125,6 +126,7 @@ fn get_resolution() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    assert_eq!(Screen::set_resolution(360, 720), Ok(()));
     assert_eq!(Screen::get_resolution(), Ok((360, 720)));
 }
 
@@ -141,6 +143,7 @@ fn get_pixel_format() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    assert_eq!(Screen::set_pixel_format(565), Ok(()));
     assert_eq!(Screen::get_pixel_format(), Ok(565));
 }
 
