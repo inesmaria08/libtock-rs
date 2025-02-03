@@ -1,5 +1,5 @@
 use libtock_platform::ErrorCode;
-use libtock_unittest::fake;
+use libtock_unittest::{fake, ExpectedSyscall};
 
 type Screen = super::Display<fake::Syscalls>;
 
@@ -37,6 +37,11 @@ fn set_brightness() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
     assert_eq!(Screen::set_brightness(90), Ok(()));
 }
 
@@ -45,6 +50,11 @@ fn set_invert_on() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
     assert_eq!(Screen::set_invert_on(), Ok(()));
 }
 
@@ -53,6 +63,11 @@ fn set_invert_off() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
     assert_eq!(Screen::set_invert_off(), Ok(()));
 }
 
@@ -93,7 +108,7 @@ fn pixel_format() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
-    assert_eq!(Screen::pixel_format(1), Ok(332));
+    assert_eq!(Screen::pixel_format(1), Ok(10));
 }
 
 #[test]
@@ -101,6 +116,11 @@ fn set_rotation() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
     assert_eq!(Screen::set_rotation(30), Ok(()));
 }
 
@@ -109,7 +129,17 @@ fn get_rotation() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
     assert_eq!(Screen::set_rotation(30), Ok(()));
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
     assert_eq!(Screen::get_rotation(), Ok(30));
 }
 
@@ -118,6 +148,11 @@ fn set_resolution() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
     assert_eq!(Screen::set_resolution(360, 720), Ok(()));
 }
 
@@ -126,6 +161,11 @@ fn get_resolution() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
     assert_eq!(Screen::set_resolution(360, 720), Ok(()));
     assert_eq!(Screen::get_resolution(), Ok((360, 720)));
 }
@@ -135,7 +175,12 @@ fn set_pixel_format() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
-    assert_eq!(Screen::set_pixel_format(565), Ok(()));
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
+    assert_eq!(Screen::set_pixel_format(2), Ok(()));
 }
 
 #[test]
@@ -143,8 +188,13 @@ fn get_pixel_format() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
-    assert_eq!(Screen::set_pixel_format(565), Ok(()));
-    assert_eq!(Screen::get_pixel_format(), Ok(565));
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
+    assert_eq!(Screen::set_pixel_format(2), Ok(()));
+    assert_eq!(Screen::get_pixel_format(), Ok(2));
 }
 
 #[test]

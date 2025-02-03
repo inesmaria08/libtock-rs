@@ -54,12 +54,12 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         share::scope(|subscribe| {
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(DRIVER_NUM, command::SET_BRIGHTNESS, value as u32, 0).to_result()?;
+            let val = S::command(DRIVER_NUM, command::SET_BRIGHTNESS, value as u32, 0).to_result();
 
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })
@@ -69,12 +69,12 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         share::scope(|subscribe| {
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(DRIVER_NUM, command::SET_INVERT_ON, 0, 0).to_result()?;
+            let val = S::command(DRIVER_NUM, command::SET_INVERT_ON, 0, 0).to_result();
 
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })
@@ -84,12 +84,12 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         share::scope(|subscribe| {
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(DRIVER_NUM, command::SET_INVERT_OFF, 0, 0).to_result()?;
+            let val = S::command(DRIVER_NUM, command::SET_INVERT_OFF, 0, 0).to_result();
 
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })
@@ -138,11 +138,11 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         share::scope(|subscribe| {
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(DRIVER_NUM, command::SET_ROTATION, rotation as u32, 0).to_result()?;
+            let val = S::command(DRIVER_NUM, command::SET_ROTATION, rotation as u32, 0).to_result();
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })
@@ -154,17 +154,17 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         let called: Cell<Option<(u32,)>> = Cell::new(None);
         share::scope(|subscribe| {
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
-            S::command(
+            let val = S::command(
                 DRIVER_NUM,
                 command::SET_RESOLUTION,
                 width as u32,
                 height as u32,
             )
-            .to_result()?;
+            .to_result();
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })
@@ -177,11 +177,12 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         share::scope(|subscribe| {
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(DRIVER_NUM, command::SET_PIXEL_FORMAT, format as u32, 0).to_result()?;
+            let val =
+                S::command(DRIVER_NUM, command::SET_PIXEL_FORMAT, format as u32, 0).to_result();
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })
@@ -193,17 +194,17 @@ impl<S: Syscalls, C: Config> Display<S, C> {
         share::scope(|subscribe| {
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(
+            let val = S::command(
                 DRIVER_NUM,
                 command::SET_WRITE_FRAME,
                 data1 as u32,
                 data2 as u32,
             )
-            .to_result()?;
+            .to_result();
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })
@@ -224,12 +225,12 @@ impl<S: Syscalls, C: Config> Display<S, C> {
 
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(DRIVER_NUM, command::WRITE, s.len() as u32, 0).to_result()?;
+            let val = S::command(DRIVER_NUM, command::WRITE, s.len() as u32, 0).to_result();
 
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })
@@ -254,12 +255,12 @@ impl<S: Syscalls, C: Config> Display<S, C> {
 
             S::subscribe::<_, _, C, DRIVER_NUM, { subscribe::WRITE }>(subscribe, &called)?;
 
-            S::command(DRIVER_NUM, command::FILL, 0, 0).to_result()?;
+            let val = S::command(DRIVER_NUM, command::FILL, 0, 0).to_result();
 
             loop {
                 S::yield_wait();
                 if let Some((_,)) = called.get() {
-                    return Ok(());
+                    return val;
                 }
             }
         })

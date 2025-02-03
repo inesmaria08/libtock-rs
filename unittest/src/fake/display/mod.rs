@@ -1,20 +1,21 @@
-use crate::DriverInfo;
+use crate::{DriverInfo, DriverShareRef};
 use core::cell::Cell;
 use libtock_platform::{CommandReturn, ErrorCode};
 
 pub struct Screen {
     screen_setup: Option<u16>,
     resolution_modes: Option<u16>,
-    invert: [Cell<bool>; 1],
+    invert: Cell<bool>,
     screen_resolution_width_height: Option<(u16, u16)>,
     resolution_width_height: [Cell<u16>; 2],
     pixel_modes: Option<u16>,
-    screen_pixel_format: Option<u16>,
-    pixel_format: [Cell<u32>; 1],
-    brightness: [Cell<u16>; 1],
-    rotation: [Cell<u16>; 1],
+    screen_pixel_format: u8,
+    pixel_format: Cell<u32>,
+    brightness: Cell<u16>,
+    rotation: Cell<u16>,
     write_frame: [Cell<u16>; 2],
-    power: [Cell<u16>; 1],
+    power: Cell<u16>,
+    share_ref: DriverShareRef,
 }
 
 impl Screen {
@@ -26,24 +27,29 @@ impl Screen {
         const VALUE_BOOL: Cell<bool> = Cell::new(false);
         std::rc::Rc::new(Screen {
             screen_setup: std::option::Option::Some(3),
-            screen_pixel_format: std::option::Option::Some(332),
-            pixel_format: [VALUE_U32],
-            resolution_modes: std::option::Option::Some(2),
+            screen_pixel_format: 10,
             screen_resolution_width_height: std::option::Option::Some((1920, 1080)),
+            pixel_format: VALUE_U32,
+            resolution_modes: std::option::Option::Some(2),
             resolution_width_height: [VALUE_U16, VALUE_U16],
-            invert: [VALUE_BOOL],
-            brightness: [VALUE_U16],
+            invert: VALUE_BOOL,
+            brightness: VALUE_U16,
             pixel_modes: std::option::Option::Some(5),
-            rotation: [VALUE_U16],
+            rotation: VALUE_U16,
             write_frame: [VALUE_U16, VALUE_U16],
-            power: [VALUE_U16],
+            power: VALUE_U16,
+            share_ref: Default::default(),
         })
     }
 }
 
 impl crate::fake::SyscallDriver for Screen {
     fn info(&self) -> DriverInfo {
-        DriverInfo::new(DRIVER_NUM)
+        DriverInfo::new(DRIVER_NUM).upcall_count(2)
+    }
+
+    fn register(&self, share_ref: DriverShareRef) {
+        self.share_ref.replace(share_ref);
     }
 
     fn command(&self, command_num: u32, argument0: u32, argument1: u32) -> CommandReturn {
@@ -52,33 +58,42 @@ impl crate::fake::SyscallDriver for Screen {
             SCREEN_SETUP => crate::command_return::success_u32(self.screen_setup.unwrap() as u32),
 
             SET_POWER => {
-                self.power[0].set(1);
+                self.power.set(1);
                 crate::command_return::success()
             }
-            GET_POWER => crate::command_return::success_u32(self.power[0].get() as u32),
+            GET_POWER => crate::command_return::success_u32(self.power.get() as u32),
 
             SET_BRIGHTNESS => {
-                self.brightness[0].set(argument0 as u16);
+                self.brightness.set(argument0 as u16);
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
                 crate::command_return::success()
             }
-            GET_BRIGHTNESS => crate::command_return::success_u32(self.brightness[0].get() as u32),
+            GET_BRIGHTNESS => crate::command_return::success_u32(self.brightness.get() as u32),
 
             SET_INVERT_ON => {
-                self.invert[0].set(argument0 != 0);
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
+                self.invert.set(argument0 != 0);
                 crate::command_return::success()
             }
 
             SET_INVERT_OFF => {
-                self.invert[0].set(argument0 != 0);
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
+                self.invert.set(argument0 != 0);
                 crate::command_return::success()
             }
 
             SET_INVERT => {
-                self.invert[0].set(argument0 != 0);
+                self.invert.set(argument0 != 0);
                 crate::command_return::success()
             }
 
-            GET_INVERT => crate::command_return::success_u32(self.invert[0].get() as u32),
+            GET_INVERT => crate::command_return::success_u32(self.invert.get() as u32),
 
             GET_RESOLUTION_MODES_COUNT => {
                 if self.screen_setup != None {
@@ -89,6 +104,10 @@ impl crate::fake::SyscallDriver for Screen {
             }
 
             GET_RESOLUTION_WIDTH_HEIGHT => {
+                self.brightness.set(argument0 as u16);
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
                 if self.screen_setup != None {
                     crate::command_return::success_2_u32(
                         self.screen_resolution_width_height.unwrap().0 as u32,
@@ -108,17 +127,28 @@ impl crate::fake::SyscallDriver for Screen {
             }
 
             PIXEL_FORMAT => {
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
                 if self.screen_setup != None {
-                    crate::command_return::success_u32(self.screen_pixel_format.unwrap() as u32)
+                    crate::command_return::success_u32(self.screen_pixel_format as u32)
                 } else {
                     crate::command_return::failure(ErrorCode::NoSupport)
                 }
             }
 
-            GET_ROTATION => crate::command_return::success_u32(self.rotation[0].get() as u32),
+            GET_ROTATION => {
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
+                crate::command_return::success_u32(self.rotation.get() as u32)
+            }
 
             SET_ROTATION => {
-                self.rotation[0].set(argument0 as u16);
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
+                self.rotation.set(argument0 as u16);
                 crate::command_return::success()
             }
 
@@ -128,19 +158,22 @@ impl crate::fake::SyscallDriver for Screen {
             ),
 
             SET_RESOLUTION => {
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
                 self.resolution_width_height[0].set(argument0 as u16);
                 self.resolution_width_height[1].set(argument1 as u16);
                 crate::command_return::success()
             }
 
-            GET_PIXEL_FORMAT => crate::command_return::success_2_u32(
-                self.pixel_format[0].get() as u32,
-                self.pixel_format[1].get() as u32,
-            ),
+            GET_PIXEL_FORMAT => crate::command_return::success_u32(self.pixel_format.get() as u32),
 
             SET_PIXEL_FORMAT => {
-                if Some(argument0) != None {
-                    self.pixel_format[0].set(argument0);
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
+                if argument0 < self.screen_pixel_format as u32 {
+                    self.pixel_format.set(argument0);
                     crate::command_return::success()
                 } else {
                     crate::command_return::failure(ErrorCode::Invalid)
@@ -148,6 +181,9 @@ impl crate::fake::SyscallDriver for Screen {
             }
 
             SET_WRITE_FRAME => {
+                self.share_ref
+                    .schedule_upcall(0, (0, 0, 0))
+                    .expect("Unable to schedule upcall {}");
                 self.write_frame[0].set(argument0 as u16);
                 self.write_frame[1].set(argument1 as u16);
                 crate::command_return::success()

@@ -27,7 +27,7 @@ fn command() {
     );
     assert_eq!(
         screen.command(PIXEL_FORMAT, 0, 0).get_success_u32(),
-        Some(332)
+        Some(10)
     );
     assert!(screen.command(SET_ROTATION, 90, 0).is_success());
     assert_eq!(
@@ -78,7 +78,7 @@ fn kernel_integration() {
     );
     assert_eq!(
         fake::Syscalls::command(DRIVER_NUM, PIXEL_FORMAT, 0, 0).get_success_u32(),
-        Some(332)
+        Some(10)
     );
     assert!(fake::Syscalls::command(DRIVER_NUM, SET_ROTATION, 90, 0).is_success());
     assert_eq!(
