@@ -1,4 +1,4 @@
-use crate::{DriverInfo, DriverShareRef};
+use crate::{command_return, DriverInfo, DriverShareRef, RoAllowBuffer};
 use core::cell::Cell;
 use libtock_platform::{CommandReturn, ErrorCode};
 
@@ -16,6 +16,9 @@ pub struct Screen {
     write_frame: [Cell<u16>; 2],
     power: Cell<u16>,
     share_ref: DriverShareRef,
+    // write_buffer: Cell<Option<&'static [u8]>>,
+    write_buffer: Cell<Option<RoAllowBuffer>>,
+    messages: Cell<Vec<u8>>,
 }
 
 impl Screen {
@@ -27,7 +30,7 @@ impl Screen {
         const VALUE_BOOL: Cell<bool> = Cell::new(false);
         std::rc::Rc::new(Screen {
             screen_setup: std::option::Option::Some(3),
-            screen_pixel_format: 10,
+            screen_pixel_format: 1,
             screen_resolution_width_height: std::option::Option::Some((1920, 1080)),
             pixel_format: VALUE_U32,
             resolution_modes: std::option::Option::Some(2),
@@ -39,17 +42,62 @@ impl Screen {
             write_frame: [VALUE_U16, VALUE_U16],
             power: VALUE_U16,
             share_ref: Default::default(),
+            write_buffer: Cell::new(None),
+            messages: Default::default(),
         })
+    }
+    pub fn take_bytes(&self) -> Vec<u8> {
+        self.messages.take()
+    }
+    fn is_buffer_length_valid(&self, buffer_len: usize) -> bool {
+        let bytes_per_pixel = match self.pixel_format.get() {
+            1 => 1,            // Mono
+            2 => 2,            // RGB_565
+            3 => 3,            // RGB_888
+            4 => 4,            // ARGB_8888
+            _ => return false, // Format necunoscut
+        };
+        buffer_len % bytes_per_pixel == 0
+    }
+
+    fn write(&self, buffer: &[u8]) -> Result<(), ErrorCode> {
+        if !self.is_buffer_length_valid(buffer.len()) {
+            return Err(ErrorCode::Invalid);
+        }
+        self.share_ref
+            .schedule_upcall(0, (0, 0, 0))
+            .expect("Unable to schedule upcall");
+        Ok(())
+    }
+
+    fn fill(&self, _color: u16) -> Result<(), ErrorCode> {
+        self.share_ref
+            .schedule_upcall(0, (0, 0, 0))
+            .expect("Unable to schedule upcall");
+        Ok(())
     }
 }
 
 impl crate::fake::SyscallDriver for Screen {
     fn info(&self) -> DriverInfo {
-        DriverInfo::new(DRIVER_NUM).upcall_count(2)
+        DriverInfo::new(DRIVER_NUM).upcall_count(3)
     }
 
     fn register(&self, share_ref: DriverShareRef) {
         self.share_ref.replace(share_ref);
+    }
+
+    fn allow_readonly(
+        &self,
+        buffer_num: u32,
+        buffer: RoAllowBuffer,
+    ) -> Result<RoAllowBuffer, (RoAllowBuffer, ErrorCode)> {
+        if buffer_num == 1 {
+            let old_buffer = self.write_buffer.replace(Some(buffer));
+            Ok(old_buffer.unwrap_or(RoAllowBuffer::default()))
+        } else {
+            Err((buffer, ErrorCode::Invalid))
+        }
     }
 
     fn command(&self, command_num: u32, argument0: u32, argument1: u32) -> CommandReturn {
@@ -172,7 +220,7 @@ impl crate::fake::SyscallDriver for Screen {
                 self.share_ref
                     .schedule_upcall(0, (0, 0, 0))
                     .expect("Unable to schedule upcall {}");
-                if argument0 < self.screen_pixel_format as u32 {
+                if argument0 < self.pixel_modes.unwrap() as u32 {
                     self.pixel_format.set(argument0);
                     crate::command_return::success()
                 } else {
@@ -194,10 +242,30 @@ impl crate::fake::SyscallDriver for Screen {
                 self.write_frame[1].get() as u32,
             ),
 
-            // to do
-            WRITE => crate::command_return::success(),
+            WRITE => {
+                let buffer_len = argument0 as usize;
+                let buffer = self
+                    .write_buffer
+                    .take()
+                    .expect("No buffer provided for WRITE command");
 
-            FILL => crate::command_return::success(),
+                if buffer.len() != buffer_len || !self.is_buffer_length_valid(buffer_len) {
+                    return command_return::failure(ErrorCode::Invalid);
+                }
+
+                match self.write(buffer.as_ref()) {
+                    Ok(()) => command_return::success(),
+                    Err(e) => command_return::failure(e),
+                }
+            }
+
+            FILL => {
+                let color = argument0 as u16;
+                match self.fill(color) {
+                    Ok(()) => command_return::success(),
+                    Err(e) => command_return::failure(e),
+                }
+            }
             _ => return crate::command_return::failure(ErrorCode::NoSupport),
         }
     }

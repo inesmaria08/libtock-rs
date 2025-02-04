@@ -1,7 +1,9 @@
 use crate::fake;
 use fake::display::*;
 use fake::SyscallDriver;
+use libtock_platform::share;
 use libtock_platform::CommandReturn;
+use libtock_platform::DefaultConfig;
 use libtock_platform::Syscalls;
 // Tests the command implementation.
 #[test]
@@ -27,7 +29,7 @@ fn command() {
     );
     assert_eq!(
         screen.command(PIXEL_FORMAT, 0, 0).get_success_u32(),
-        Some(10)
+        Some(1)
     );
     assert!(screen.command(SET_ROTATION, 90, 0).is_success());
     assert_eq!(
@@ -46,6 +48,24 @@ fn command() {
         screen.command(GET_WRITE_FRAME, 0, 0).get_success_2_u32(),
         Some((360, 720))
     );
+    //////////////////////////
+    let kernel = fake::Kernel::new();
+    let display = fake::Screen::new();
+    kernel.add_driver(&display);
+    let mut buf = [0; 4];
+
+    share::scope(|allow_ro| {
+        fake::Syscalls::allow_ro::<
+            DefaultConfig,
+            { fake::display::DRIVER_NUM },
+            { fake::display::WRITE },
+        >(allow_ro, &mut buf)
+        .unwrap();
+        assert!(
+            fake::Syscalls::command(fake::display::DRIVER_NUM, fake::display::WRITE, 3, 0)
+                .is_success()
+        );
+    });
 }
 
 #[test]
@@ -78,7 +98,7 @@ fn kernel_integration() {
     );
     assert_eq!(
         fake::Syscalls::command(DRIVER_NUM, PIXEL_FORMAT, 0, 0).get_success_u32(),
-        Some(10)
+        Some(1)
     );
     assert!(fake::Syscalls::command(DRIVER_NUM, SET_ROTATION, 90, 0).is_success());
     assert_eq!(

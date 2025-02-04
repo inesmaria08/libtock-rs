@@ -108,7 +108,7 @@ fn pixel_format() {
     let kernel = fake::Kernel::new();
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
-    assert_eq!(Screen::pixel_format(1), Ok(10));
+    assert_eq!(Screen::pixel_format(1), Ok(1));
 }
 
 #[test]
@@ -203,4 +203,25 @@ fn set_write_frame() {
     let driver = fake::Screen::new();
     kernel.add_driver(&driver);
     assert_eq!(Screen::set_write_frame(4660, 22136, 39612, 57072), Ok(()));
+}
+
+#[test]
+fn write_buffer() {
+    let kernel = fake::Kernel::new();
+    let driver = fake::Screen::new();
+    kernel.add_driver(&driver);
+    let _ = Screen::set_pixel_format(2);
+    let buffer = [0u8; 4];
+
+    kernel.add_expected_syscall(ExpectedSyscall::Subscribe {
+        driver_num: 0x90001,
+        subscribe_num: 0,
+        skip_with_error: None,
+    });
+    kernel.add_expected_syscall(ExpectedSyscall::AllowRo {
+        driver_num: 0x90001,
+        buffer_num: 0,
+        return_error: None,
+    });
+    assert_eq!(Screen::write(&buffer), Ok(()));
 }
